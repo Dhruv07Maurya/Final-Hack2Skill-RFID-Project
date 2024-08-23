@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>main-page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: #3edd1e;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px;
+            width: 100%;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .content {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Supermarket Inventory Management</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#" onclick="loadPage('dashboard.html')">Dashboard</a></li>
+            <li><a href="#" onclick="loadPage('product-history.html')">Product History</a></li>
+        </ul>
+    </nav>
+
+    <div class="content" id="content-area">
+        <!-- Content from other HTML files will be loaded here -->
+        <h2>Welcome to the Supermarket Inventory Management System</h2>
+        <p>Please select a section from the navigation above.</p>
+        <div class="container">
+            <h2>Inventory Summary</h2>
+            <table id="inventory-summary">
+                <thead>
+                    <tr>
+                        <th>Category Number</th>
+                        <th>Total Items</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be inserted here dynamically -->
+                </tbody>
+            </table>
+
+            <div class="chart-container">
+                <canvas id="inventoryChart"></canvas>
+            </div>
+
+            <h2>Products in Stock (Owned by Supermarket)</h2>
+            <table id="product-list">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Product Owner</th>
+                        <th>Product Price</th>
+                        <th>Category Number</th>
+                        <th>UID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function loadPage(page) {
+            fetch(page)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('content-area').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading page:', error);
+                    document.getElementById('content-area').innerHTML = '<p>Error loading page. Please try again later.</p>';
+                });
+        }
+
+        // Function to update the product list table
+        function updateProductsInStock(data) {
+            const productTable = document.getElementById('product-list').getElementsByTagName('tbody')[0];
+            productTable.innerHTML = '';
+
+            data.forEach(product => {
+                const row = productTable.insertRow();
+                const cellName = row.insertCell(0);
+                const cellOwner = row.insertCell(1);
+                const cellPrice = row.insertCell(2);
+                const cellCategory = row.insertCell(3);
+                const cellUID = row.insertCell(4);
+
+                cellName.textContent = product.ProductName;
+                cellOwner.textContent = product.ProductOwner;
+                cellPrice.textContent = product.ProductPrice;
+                cellCategory.textContent = product.catNumber || 'Not Available';
+                cellUID.textContent = product.UID;
+            });
+        }
+
+        // Function to fetch and update data periodically
+        function fetchData() {
+            fetch('https://hackathon-submission-q1mg.onrender.com/inventory-summary')
+                .then(response => response.json())
+                .then(data => updateInventorySummary(data));
+
+            fetch('https://hackathon-submission-q1mg.onrender.com/purchases')
+                .then(response => response.json())
+                .then(data => updateProductsInStock(data));
+        }
+
+        // Call fetchData every 10 seconds (10000 milliseconds)
+        setInterval(fetchData, 5000);
+
+        // Initial data fetch
+        fetchData();
+
+
+    </script>
+
+</body>
+
+</html>
